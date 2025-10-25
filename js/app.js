@@ -3,6 +3,7 @@ class DigitalDressCodeApp {
         this.segmentator = new Segmentator();
         this.videoProcessor = new VideoProcessor();
         this.employeeDisplay = null;
+        this.employeeEditor = null;
         this.isInitialized = false;
         
         this.init();
@@ -15,6 +16,10 @@ class DigitalDressCodeApp {
             if (document.readyState === 'loading') {
                 await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
             }
+            
+            // Инициализируем редактор ПЕРВЫМ
+            this.employeeEditor = new EmployeeEditor();
+            window.employeeEditor = this.employeeEditor; // Делаем глобально доступным
             
             this.employeeDisplay = new EmployeeDisplay();
             this.videoProcessor.setSegmentator(this.segmentator);

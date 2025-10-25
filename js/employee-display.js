@@ -2,8 +2,28 @@ class EmployeeDisplay {
     constructor() {
         this.currentPrivacyLevel = 'low';
         this.currentTextColor = 'dark';
-        this.employeeData = employeeData.employee;
+        this.employeeData = this.loadEmployeeData();
         this.init();
+    }
+
+    loadEmployeeData() {
+        // Сначала пытаемся загрузить из редактора
+        if (window.employeeEditor) {
+            return window.employeeEditor.getEmployeeData();
+        }
+        
+        // Затем из localStorage
+        const savedData = localStorage.getItem('employeeCustomData');
+        if (savedData) {
+            try {
+                return JSON.parse(savedData);
+            } catch (e) {
+                console.error('Ошибка загрузки данных:', e);
+            }
+        }
+        
+        // Иначе используем стандартные данные
+        return employeeData.employee;
     }
 
     init() {
@@ -127,6 +147,8 @@ class EmployeeDisplay {
     }
 
     getDisplayData() {
+        // Всегда загружаем свежие данные
+        this.employeeData = this.loadEmployeeData();
         const data = { ...this.employeeData };
         
         switch (this.currentPrivacyLevel) {
@@ -161,52 +183,54 @@ class EmployeeDisplay {
         ctx.save();
         ctx.scale(-1, 1);
         
-        const textX = -10 - width;
-        const textY = 10;
+        // Позиция в левом верхнем углу (зеркально)
+        const textX = -ctx.canvas.width + 20; // Отступ 20px от левого края
+        const textY = 20; // Отступ 20px от верхнего края
         
         const colors = this.getTextColors();
         
-        ctx.fillStyle = colors.background;
-        ctx.fillRect(textX, textY, width, this.calculateHeight(data));
+        // УБИРАЕМ полупрозрачный фон - закомментировали эту строку
+        // ctx.fillStyle = colors.background;
+        // ctx.fillRect(textX, textY, width, this.calculateHeight(data));
         
         ctx.fillStyle = colors.text;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         
-        let currentY = textY + 10;
+        let currentY = textY;
         
         ctx.font = 'bold 16px Arial';
-        ctx.fillText(data.full_name, textX + 10, currentY);
+        ctx.fillText(data.full_name, textX, currentY);
         currentY += 25;
         
         ctx.font = '14px Arial';
-        ctx.fillText(data.position, textX + 10, currentY);
+        ctx.fillText(data.position, textX, currentY);
         currentY += 20;
         
         if (data.company) {
-            ctx.fillText(data.company, textX + 10, currentY);
+            ctx.fillText(data.company, textX, currentY);
             currentY += 20;
         }
         
         if (data.department) {
-            ctx.fillText(data.department, textX + 10, currentY);
+            ctx.fillText(data.department, textX, currentY);
             currentY += 20;
         }
         
         if (data.office_location) {
-            ctx.fillText(data.office_location, textX + 10, currentY);
+            ctx.fillText(data.office_location, textX, currentY);
             currentY += 20;
         }
         
         if (this.currentPrivacyLevel === 'high' && data.contact) {
-            ctx.fillText(`Email: ${data.contact.email}`, textX + 10, currentY);
+            ctx.fillText(`Email: ${data.contact.email}`, textX, currentY);
             currentY += 20;
-            ctx.fillText(`Telegram: ${data.contact.telegram}`, textX + 10, currentY);
+            ctx.fillText(`Telegram: ${data.contact.telegram}`, textX, currentY);
             currentY += 20;
             
             if (data.branding && data.branding.slogan) {
                 ctx.font = 'italic 12px Arial';
-                ctx.fillText(`"${data.branding.slogan}"`, textX + 10, currentY);
+                ctx.fillText(`"${data.branding.slogan}"`, textX, currentY);
             }
         }
         
